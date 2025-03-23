@@ -1,4 +1,9 @@
+using MyAspNetApp.DataAccess;
+
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+builder.Services.AddTransient<PostgresDataAccess>();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();

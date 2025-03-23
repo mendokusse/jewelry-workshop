@@ -7,4 +7,8 @@
     <RootNamespace>workshop_web_app</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Npgsql" Version="9.0.3" />
+  </ItemGroup>
+
 </Project>
