@@ -2,7 +2,7 @@ using System;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
 
-namespace MyAspNetApp.DataAccess
+namespace workshop_web_app.DataAccess
 {
     public class PostgresDataAccess
     {

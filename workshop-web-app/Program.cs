@@ -1,4 +1,4 @@
-using MyAspNetApp.DataAccess;
+using workshop_web_app.DataAccess;
 
 var builder = WebApplication.CreateBuilder(args);
 

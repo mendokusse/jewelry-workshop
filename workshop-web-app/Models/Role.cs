@@ -1,4 +1,4 @@
-namespace MyAspNetApp.Models
+namespace workshop_web_app.Models
 {
     public class Role
     {
