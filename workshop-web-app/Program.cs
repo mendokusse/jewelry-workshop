@@ -3,10 +3,12 @@ using workshop_web_app.DataAccess;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+
+builder.Services.AddControllersWithViews();
+
 builder.Services.AddTransient<PostgresDataAccess>();
 
-// Add services to the container.
-builder.Services.AddControllersWithViews();
+builder.Services.AddScoped<UserRepository>();
 
 var app = builder.Build();
 
