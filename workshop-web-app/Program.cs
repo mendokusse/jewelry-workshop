@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
 using workshop_web_app.DataAccess;
 using workshop_web_app.Repositories;
 
@@ -7,6 +8,15 @@ builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnC
 
 builder.Services.AddControllersWithViews();
 
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Account/Login";          // путь для входа
+        options.LogoutPath = "/Account/Logout";          // путь для выхода
+        options.AccessDeniedPath = "/Account/AccessDenied"; // опционально
+    });
+
+// Регистрация необходимых сервисов
 builder.Services.AddTransient<PostgresDataAccess>();
 builder.Services.AddScoped<MaterialRepository>();
 builder.Services.AddScoped<OrderRepository>();
@@ -15,23 +25,20 @@ builder.Services.AddScoped<RoleRepository>();
 builder.Services.AddScoped<UnitRepository>();
 builder.Services.AddScoped<UserRepository>();
 
-
 var app = builder.Build();
-
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(
