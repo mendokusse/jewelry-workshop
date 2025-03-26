@@ -1,4 +1,5 @@
 using workshop_web_app.DataAccess;
+using workshop_web_app.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,10 +8,16 @@ builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnC
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddTransient<PostgresDataAccess>();
-
+builder.Services.AddScoped<MaterialRepository>();
+builder.Services.AddScoped<OrderRepository>();
+builder.Services.AddScoped<ProductTypeRepository>();
+builder.Services.AddScoped<RoleRepository>();
+builder.Services.AddScoped<UnitRepository>();
 builder.Services.AddScoped<UserRepository>();
 
+
 var app = builder.Build();
+
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
