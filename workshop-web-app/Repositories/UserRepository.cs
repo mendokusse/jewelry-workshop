@@ -157,6 +157,37 @@ namespace workshop_web_app.Repositories
             return users;
         }
 
+        public async Task<bool> UpdateUserAsync(User user)
+        {
+            int affectedRows = 0;
+            using (var connection = GetConnection())
+            {
+                await connection.OpenAsync();
+                string sql = @"
+                    UPDATE users
+                    SET role_id = @role_id,
+                        user_name = @user_name,
+                        user_password_hash = @user_password_hash,
+                        user_phone = @user_phone,
+                        user_email = @user_email
+                    WHERE user_id = @user_id;
+                ";
+                
+                using (var command = new NpgsqlCommand(sql, connection))
+                {
+                    command.Parameters.AddWithValue("role_id", user.RoleId);
+                    command.Parameters.AddWithValue("user_name", user.UserName);
+                    command.Parameters.AddWithValue("user_password_hash", user.UserPasswordHash);
+                    command.Parameters.AddWithValue("user_phone", (object)user.UserPhone ?? DBNull.Value);
+                    command.Parameters.AddWithValue("user_email", (object)user.UserEmail ?? DBNull.Value);
+                    command.Parameters.AddWithValue("user_id", user.UserId);
+                    
+                    affectedRows = await command.ExecuteNonQueryAsync();
+                }
+            }
+            return affectedRows > 0;
+        }
+
         public async Task<int> AddUserAsync(User user)
         {
             int newUserId = 0;
