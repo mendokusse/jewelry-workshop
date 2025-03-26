@@ -1,0 +1,25 @@
+@using System.Security.Claims
+@{
+    ViewData["Title"] = "Личный кабинет";
+    var userName = User.Identity.IsAuthenticated ? User.Identity.Name : "Гость";
+    var userId = User.FindFirst("UserId")?.Value;
+    var role = User.FindFirst(ClaimTypes.Role)?.Value;
+}
+
+<h2>@ViewData["Title"]</h2>
+
+@if (User.Identity.IsAuthenticated)
+{
+    <p>Здравствуйте, <strong>@userName</strong>!</p>
+    <ul>
+        <li>ID пользователя: @userId</li>
+        <li>Роль: @role</li>
+    </ul>
+    <p>
+        <a href="@Url.Action("Logout", "Account")" class="btn btn-danger">Выйти</a>
+    </p>
+}
+else
+{
+    <p>Вы не авторизованы. Пожалуйста, <a href="@Url.Action("Login", "Account")">войдите</a>.</p>
+}
