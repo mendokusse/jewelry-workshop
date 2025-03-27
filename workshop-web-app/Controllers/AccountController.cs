@@ -58,13 +58,11 @@ namespace workshop_web_app.Controllers
                 var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
                 var principal = new ClaimsPrincipal(identity);
                 
-                
                 await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
                 return RedirectToAction("Index", "Account");
             }
             else
             {
-                Console.WriteLine("Пользователь не найден для email: " + model.UserEmail);
                 ModelState.AddModelError("", "Неверный адрес электронной почты или пароль.");
             }
             return View(model);
@@ -80,36 +78,34 @@ namespace workshop_web_app.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(User model)
         {
-            if (ModelState.IsValid)
+            var existingUsers = await _userRepo.GetSearchUsersByEmailAsync(model.UserEmail);
+            if (existingUsers != null && existingUsers.Count > 0)
             {
-                var existingUsers = await _userRepo.GetSearchUsersByNameAsync(model.UserName);
-                if (existingUsers != null && existingUsers.Count > 0)
-                {
-                    ModelState.AddModelError("", "Пользователь с таким именем уже существует.");
-                    return View(model);
-                }
-
-                model.RoleId = 3;
-                int newUserId = await _userRepo.AddUserAsync(model);
-
-                if (newUserId > 0)
-                {
-                    var claims = new List<Claim>
-                    {
-                        new Claim(ClaimTypes.Name, model.UserName),
-                        new Claim("UserId", newUserId.ToString()),
-                        new Claim(ClaimTypes.Role, "Customer")
-                    };
-
-                    var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-                    var principal = new ClaimsPrincipal(identity);
-
-                    await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
-
-                    return RedirectToAction("Index", "Home");
-                }
-                ModelState.AddModelError("", "Ошибка при регистрации пользователя.");
+                ModelState.AddModelError("", "Пользователь с такой электронной почтой уже существует.");
+                return View(model);
             }
+            
+            model.RoleId = 3;
+            int newUserId = await _userRepo.AddUserAsync(model);
+            
+            if (newUserId > 0)
+            {
+                var claims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.Name, model.UserName),
+                    new Claim("UserId", newUserId.ToString()),
+                    new Claim(ClaimTypes.Role, "Customer")
+                };
+                            
+                var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                var principal = new ClaimsPrincipal(identity);
+                            
+                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+                            
+                return RedirectToAction("Index", "Home");
+            }
+            
+            ModelState.AddModelError("", "Ошибка при регистрации пользователя.");
             return View(model);
         }
 
