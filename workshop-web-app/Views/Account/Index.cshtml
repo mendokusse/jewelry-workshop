@@ -23,3 +23,16 @@ else
 {
     <p>Вы не авторизованы. Пожалуйста, <a href="@Url.Action("Login", "Account")">войдите</a>.</p>
 }
+@using System.Security.Claims
+@{
+    bool showAdminPanel = User.Identity.IsAuthenticated &&
+                          (User.IsInRole("Admin") || User.IsInRole("Manager") ||
+                           User.IsInRole("Jeweler") || User.IsInRole("Accountant"));
+}
+
+@if (showAdminPanel)
+{
+    <div class="mt-3">
+        <a href="@Url.Action("Index", "Admin")" class="btn btn-warning">Панель администратора</a>
+    </div>
+}

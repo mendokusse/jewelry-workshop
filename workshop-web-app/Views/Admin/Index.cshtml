@@ -1,0 +1,48 @@
+@using System.Security.Claims
+@{
+    ViewData["Title"] = "Админская панель";
+    
+    bool canAccessOrders = User.IsInRole("Admin") || User.IsInRole("Manager") || User.IsInRole("Jeweler");
+    bool canAccessMaterials = canAccessOrders;
+    bool canAccessUsers = User.IsInRole("Admin");
+    bool canAccessReports = User.IsInRole("Admin") || User.IsInRole("Accountant");
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<div class="container mt-4">
+    <div class="row">
+        @if (canAccessOrders)
+        {
+            <div class="col-md-3 mb-3">
+                <a href="@Url.Action("Orders", "Admin")" class="btn btn-primary btn-block">
+                    Заказы
+                </a>
+            </div>
+        }
+        @if (canAccessMaterials)
+        {
+            <div class="col-md-3 mb-3">
+                <a href="@Url.Action("Materials", "Admin")" class="btn btn-success btn-block">
+                    Материалы
+                </a>
+            </div>
+        }
+        @if (canAccessUsers)
+        {
+            <div class="col-md-3 mb-3">
+                <a href="@Url.Action("Users", "Admin")" class="btn btn-warning btn-block">
+                    Пользователи
+                </a>
+            </div>
+        }
+        @if (canAccessReports)
+        {
+            <div class="col-md-3 mb-3">
+                <a href="@Url.Action("Reports", "Admin")" class="btn btn-info btn-block">
+                    Отчёты
+                </a>
+            </div>
+        }
+    </div>
+</div>

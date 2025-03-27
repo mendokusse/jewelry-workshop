@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using workshop_web_app.Models;
 using workshop_web_app.Repositories;
 
-
 namespace workshop_web_app.Controllers
 {
     public class AccountController : Controller
