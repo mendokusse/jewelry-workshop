@@ -24,6 +24,7 @@ builder.Services.AddScoped<ProductTypeRepository>();
 builder.Services.AddScoped<RoleRepository>();
 builder.Services.AddScoped<UnitRepository>();
 builder.Services.AddScoped<UserRepository>();
+builder.Services.AddScoped<CatalogRepository>();
 
 var app = builder.Build();
 

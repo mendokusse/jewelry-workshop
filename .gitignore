@@ -98,3 +98,6 @@ msbuild.wrn
 appsettings.json
 
 .vscode/
+
+# Directory for images in catalog
+workshop-web-app/wwwroot/catalog-img/*
