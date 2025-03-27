@@ -64,3 +64,12 @@ CREATE TABLE order_details (
     FOREIGN KEY (order_id) REFERENCES orders(order_id) ON DELETE CASCADE,
     FOREIGN KEY (material_id) REFERENCES materials(material_id) ON DELETE CASCADE
 );
+
+CREATE TABLE catalog (
+    catalog_photo_id    INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    product_type_id     INTEGER,
+    product_name        VARCHAR(30)     NOT NULL,
+    product_img_path    VARCHAR(255)    NOT NULL,
+    product_price       DECIMAL         NOT NULL,
+    FOREIGN KEY (product_type_id) REFERENCES product_types(product_type_id) ON DELETE SET NULL
+);
