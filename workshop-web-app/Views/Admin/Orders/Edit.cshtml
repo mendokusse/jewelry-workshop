@@ -1,17 +1,18 @@
 @model workshop_web_app.Models.Order
-@using Microsoft.AspNetCore.Http
+
 @{
     ViewData["Title"] = "Редактирование заказа";
     bool isManager = User.IsInRole("Manager") || User.IsInRole("Admin");
-    bool isJeweler = User.IsInRole("Jeweler") && !isManager; // если ювелир, но не менеджер
+    bool isJeweler = User.IsInRole("Jeweler") && !isManager; // если ювелир без прав менеджера
 }
 
 <h1>@ViewData["Title"]</h1>
 
 <form asp-action="EditOrder" method="post">
     @Html.AntiForgeryToken()
-    <input type="hidden" asp-for="OrderId" />
+    @Html.HiddenFor(m => m.OrderId)
 
+    <!-- Общая информация заказа (редактируется менеджером/admin, для ювелира – только для чтения) -->
     <div class="form-group">
         <label asp-for="ProductTypeId">Тип изделия</label>
         @if(isManager)
@@ -50,27 +51,14 @@
 
     <div class="form-group">
         <label asp-for="OrderDate">Дата заказа</label>
-        @if(isManager)
-        {
-            <input asp-for="OrderDate" class="form-control" type="datetime-local" />
-        }
-        else
-        {
-            <input asp-for="OrderDate" class="form-control" type="datetime-local" readonly="readonly" />
-        }
+        <input asp-for="OrderDate" type="datetime-local" class="form-control" readonly="readonly" />
     </div>
 
     <div class="form-group">
         <label asp-for="OrderUpdateDate">Дата обновления</label>
-        @if(isManager)
-        {
-            <input asp-for="OrderUpdateDate" class="form-control" type="datetime-local" />
-        }
-        else
-        {
-            <input asp-for="OrderUpdateDate" class="form-control" type="datetime-local" readonly="readonly" />
-        }
+        <input asp-for="OrderUpdateDate" type="datetime-local" class="form-control" readonly="readonly" />
     </div>
+
     <div class="form-group">
         <label asp-for="StatusId">Статус заказа</label>
         @if(isManager)
@@ -83,18 +71,39 @@
         }
     </div>
 
-    <!-- Секция для редактирования материалов заказа (OrderDetails) -->
+    <!-- Новые поля для привязанных пользователей -->
+    <div class="form-group">
+        <label>Менеджер</label>
+        <!-- Менеджер не редактируется, только отображается -->
+        <input type="text" class="form-control" value="@Model.ManagerUser?.UserName" readonly="readonly" />
+    </div>
+
+    <div class="form-group">
+        <label>Ювелир</label>
+        @if(isManager)
+        {
+            <!-- Если текущий пользователь имеет роль Manager или Admin, показываем выпадающий список -->
+            <select asp-for="JewelerUserId" class="form-control" asp-items="(SelectList)ViewBag.Jewelers"></select>
+        }
+        else
+        {
+            <!-- Если пользователь - ювелир, выводим информацию только для чтения -->
+            <input type="text" class="form-control" value="@Model.JewelerUser?.UserName" readonly="readonly" />
+        }
+    </div>
+
+    <!-- Секция для материалов заказа -->
     <h3>Материалы заказа</h3>
-    <table class="table table-bordered">
+    <table class="table table-bordered" id="orderDetailsTable">
         <thead>
             <tr>
                 <th>ID детали</th>
                 <th>Материал</th>
-                <th>Вес (кг)</th>
+                <th>Вес, использованный в заказе</th>
                 <th>Действия</th>
             </tr>
         </thead>
-        <tbody id="orderDetailsTable">
+        <tbody>
             @for (int i = 0; i < Model.OrderDetails.Count; i++)
             {
                 <tr>
@@ -123,14 +132,15 @@
                         }
                     </td>
                     <td>
-                        <button type="button" class="btn btn-danger btn-sm" onclick="removeDetail(this)">Удалить</button>
+                        @if(isManager || isJeweler)
+                        {
+                            <button type="button" class="btn btn-danger btn-sm" onclick="removeDetail(this)">Удалить</button>
+                        }
                     </td>
                 </tr>
             }
         </tbody>
     </table>
-
-    <!-- Кнопка для добавления новой строки для материала -->
     @if(isManager || isJeweler)
     {
         <button type="button" class="btn btn-secondary" onclick="addDetail()">Добавить материал</button>
@@ -143,12 +153,10 @@
 @section Scripts {
     <script>
         function addDetail() {
-            // Пример динамического добавления строки в таблицу деталей
-            var index = document.querySelectorAll('#orderDetailsTable tr').length;
+            var index = document.querySelectorAll('#orderDetailsTable tbody tr').length;
             var row = `<tr>
                 <td>
-                    <input name="OrderDetails[${index}].DetailsListId" type="hidden" value="0" />
-                    Новая
+                    <input name="OrderDetails[${index}].DetailsListId" type="hidden" value="0" />Новая
                 </td>
                 <td>
                     <input class="form-control" name="OrderDetails[${index}].Material.MaterialName" type="text" value="" />
@@ -160,7 +168,7 @@
                     <button type="button" class="btn btn-danger btn-sm" onclick="removeDetail(this)">Удалить</button>
                 </td>
             </tr>`;
-            document.getElementById("orderDetailsTable").insertAdjacentHTML('beforeend', row);
+            document.querySelector('#orderDetailsTable tbody').insertAdjacentHTML('beforeend', row);
         }
         function removeDetail(btn) {
             btn.closest('tr').remove();

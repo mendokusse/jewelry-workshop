@@ -381,6 +381,8 @@ namespace workshop_web_app.Repositories
                     WHERE order_id = @order_id;
                 ";
 
+                order.OrderUpdateDate = DateTime.Now;
+                
                 using (var command = new NpgsqlCommand(sql, connection))
                 {
                     command.Parameters.AddWithValue("product_type_id", order.ProductTypeId);
