@@ -34,7 +34,7 @@ namespace workshop_web_app.Controllers
         public async Task<IActionResult> Orders()
         {
             var orders = await _orderRepo.GetAllOrdersAsync();
-            return View(orders);
+            return View("Orders/Index", orders);
         }
 
         // Редактирование заказа (доступно только для Admin и Manager)

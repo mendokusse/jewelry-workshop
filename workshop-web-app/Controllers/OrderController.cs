@@ -14,14 +14,12 @@ namespace workshop_web_app.Controllers
             _orderRepo = orderRepo;
         }
 
-        // GET: /Order or /Order/Index
         public async Task<IActionResult> Index()
         {
             var orders = await _orderRepo.GetAllOrdersAsync();
             return View(orders);
         }
 
-        // GET: /Order/Details/5
         public async Task<IActionResult> Details(int id)
         {
             var order = await _orderRepo.GetOrderByIdAsync(id);

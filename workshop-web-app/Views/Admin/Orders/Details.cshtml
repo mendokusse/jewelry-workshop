@@ -1,0 +1,146 @@
+@model workshop_web_app.Models.Order
+
+@{
+    ViewData["Title"] = "Детали заказа";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<!-- Основные данные заказа -->
+<div class="card mb-4">
+    <div class="card-header">
+        Основная информация
+    </div>
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">ID заказа</dt>
+            <dd class="col-sm-9">@Model.OrderId</dd>
+
+            <dt class="col-sm-3">Тип изделия</dt>
+            <dd class="col-sm-9">@Model.ProductType?.ProductTypeName</dd>
+
+            <dt class="col-sm-3">Комментарий</dt>
+            <dd class="col-sm-9">@Model.OrderComment</dd>
+
+            <dt class="col-sm-3">Цена</dt>
+            <dd class="col-sm-9">@Model.OrderPrice.ToString()</dd>
+
+            <dt class="col-sm-3">Дата заказа</dt>
+            <dd class="col-sm-9">
+                @(Model.OrderDate.HasValue ? Model.OrderDate.Value.ToString("dd.MM.yyyy HH:mm") : "—")
+            </dd>
+
+            <dt class="col-sm-3">Дата обновления</dt>
+            <dd class="col-sm-9">
+                @(Model.OrderUpdateDate.HasValue ? Model.OrderUpdateDate.Value.ToString("dd.MM.yyyy HH:mm") : "—")
+            </dd>
+
+            <dt class="col-sm-3">Статус заказа</dt>
+            <dd class="col-sm-9">@Model.Status?.StatusName</dd>
+        </dl>
+    </div>
+</div>
+
+<!-- Информация о ответственном лице -->
+<div class="card mb-4">
+    <div class="card-header">
+        Ответственные лица
+    </div>
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">Менеджер</dt>
+            <dd class="col-sm-9">
+                @if (Model.ManagerUser != null)
+                {
+                    @Model.ManagerUser.UserName
+                }
+                else
+                {
+                    <span>—</span>
+                }
+            </dd>
+
+            <dt class="col-sm-3">Ювелир</dt>
+            <dd class="col-sm-9">
+                @if (Model.JewelerUser != null)
+                {
+                    @Model.JewelerUser.UserName
+                }
+                else
+                {
+                    <span>—</span>
+                }
+            </dd>
+
+            <dt class="col-sm-3">Заказчик (Email)</dt>
+            <dd class="col-sm-9">
+                @if (Model.CustomerUser != null)
+                {
+                    @Model.CustomerUser.UserEmail
+                }
+                else
+                {
+                    <span>—</span>
+                }
+            </dd>
+        </dl>
+    </div>
+</div>
+
+<!-- Детали заказа: материалы -->
+<div class="card">
+    <div class="card-header">
+        Материалы заказа
+    </div>
+    <div class="card-body">
+        @if (Model.OrderDetails != null && Model.OrderDetails.Any())
+        {
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>ID детали</th>
+                        <th>Материал</th>
+                        <th>Цена материала</th>
+                        <th>Количество материала</th>
+                        <th>Вес, использованный в заказе</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var detail in Model.OrderDetails)
+                    {
+                        <tr>
+                            <td>@detail.DetailsListId</td>
+                            <td>
+                                @if (detail.Material != null)
+                                {
+                                    @detail.Material.MaterialName
+                                }
+                                else
+                                {
+                                    <span>—</span>
+                                }
+                            </td>
+                            <td>
+                                @if (detail.Material != null)
+                                {
+                                    @detail.Material.MaterialPrice.ToString("C")
+                                }
+                            </td>
+                            <td>
+                                @if (detail.Material != null)
+                                {
+                                    @detail.Material.MaterialQuantity
+                                }
+                            </td>
+                            <td>@detail.OrderMaterialWeight</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <p>Детали заказа отсутствуют.</p>
+        }
+    </div>
+</div>

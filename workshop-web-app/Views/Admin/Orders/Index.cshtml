@@ -1,0 +1,52 @@
+@model IEnumerable<workshop_web_app.Models.Order>
+
+@{
+    ViewData["Title"] = "Управление заказами";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID Заказа</th>
+            <th>Тип изделия</th>
+            <th>Комментарий</th>
+            <th>Цена</th>
+            <th>Дата заказа</th>
+            <th>Дата обновления</th>
+            <th>Статус заказа</th>
+            <th>Заказчик (Email)</th>
+            <th>Действия</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var order in Model)
+        {
+            <tr>
+                <td>@order.OrderId</td>
+                <td>@order.ProductType?.ProductTypeName</td>
+                <td>@order.OrderComment</td>
+                <td>@order.OrderPrice.ToString()</td>
+                <td>@(order.OrderDate.HasValue ? order.OrderDate.Value.ToString("dd.MM.yyyy HH:mm") : "")</td>
+                <td>@(order.OrderUpdateDate.HasValue ? order.OrderUpdateDate.Value.ToString("dd.MM.yyyy HH:mm") : "")</td>
+                <td>@order.Status?.StatusName</td>
+                <td>
+                    @if (order.CustomerUser != null)
+                    {
+                        @order.CustomerUser.UserEmail
+                    }
+                    else
+                    {
+                        @order.CustomerUserId
+                    }
+                </td>
+                <td>
+                    <a href="@Url.Action("Details", "Admin", new { id = order.OrderId })" class="btn btn-sm btn-info">Детали</a>
+                    <a href="@Url.Action("EditOrder", "Admin", new { id = order.OrderId })" class="btn btn-sm btn-warning">Редактировать</a>
+                    <a href="@Url.Action("Delete", "Admin", new { id = order.OrderId })" class="btn btn-sm btn-danger">Удалить</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
