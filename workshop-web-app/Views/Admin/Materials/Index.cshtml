@@ -1,0 +1,36 @@
+@model IEnumerable<workshop_web_app.Models.Material>
+
+@{
+    ViewData["Title"] = "Материалы";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Название</th>
+            <th>Цена</th>
+            <th>Количество</th>
+            <th>Единица измерения</th>
+            <th>Действия</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach(var material in Model)
+        {
+            <tr>
+                <td>@material.MaterialId</td>
+                <td>@material.MaterialName</td>
+                <td>@material.MaterialPrice.ToString("C")</td>
+                <td>@material.MaterialQuantity</td>
+                <td>@(material.Unit != null ? material.Unit.UnitFullName : "—")</td>
+                <td>
+                    <a href="@Url.Action("EditMaterial", "Admin", new { id = material.MaterialId })" class="btn btn-sm btn-warning">Редактировать</a>
+                    <!-- Можно добавить кнопку удаления, если требуется -->
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

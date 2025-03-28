@@ -175,7 +175,7 @@ namespace workshop_web_app.Controllers
         public async Task<IActionResult> Materials()
         {
             var materials = await _materialRepo.GetAllMaterialsAsync();
-            return View(materials);
+            return View("Materials/Index", materials);
         }
 
         // Редактирование материала (доступно только для Admin и Jeweler)
