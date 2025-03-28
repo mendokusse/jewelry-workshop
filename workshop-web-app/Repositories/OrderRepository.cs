@@ -174,11 +174,11 @@ namespace workshop_web_app.Repositories
                             {
                                 OrderId = reader.GetInt32(0),
                                 ProductTypeId = reader.GetInt32(1),
-                                 CustomerUserId = reader.IsDBNull(2) ? default(int?) : reader.GetInt32(2),
+                                CustomerUserId = reader.IsDBNull(2) ? default(int?) : reader.GetInt32(2),
                                 ManagerUserId = reader.IsDBNull(3) ? default(int?) : reader.GetInt32(3),
                                 JewelerUserId = reader.IsDBNull(4) ? default(int?) : reader.GetInt32(4),
                                 StatusId = reader.GetInt32(5),
-                                OrderComment = reader.IsDBNull(6) ? default(string?) : reader.GetString(6),
+                                OrderComment = reader.IsDBNull(6) ? default(string) : reader.GetString(6),
                                 OrderPrice = reader.GetDecimal(7),
                                 OrderDate = reader.IsDBNull(8) ? (DateTime?)null : reader.GetDateTime(8),
                                 OrderUpdateDate = reader.IsDBNull(9) ? (DateTime?)null : reader.GetDateTime(9),
@@ -225,6 +225,11 @@ namespace workshop_web_app.Repositories
                             }
                         }
                     }
+                }
+                // Теперь, после закрытия первого reader, запрашиваем детали заказа.
+                if (order != null)
+                {
+                    order.OrderDetails = await GetOrderDetailsByOrderIdAsync(order.OrderId, connection);
                 }
             }
             return order;

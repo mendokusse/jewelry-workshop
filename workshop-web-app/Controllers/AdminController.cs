@@ -60,6 +60,17 @@ namespace workshop_web_app.Controllers
             return View(order);
         }
 
+        [Authorize(Roles = "Admin,Jeweler,Manager")]
+        public async Task<IActionResult> Details(int id)
+        {
+            var order = await _orderRepo.GetOrderByIdAsync(id);
+            if (order == null)
+            {
+                return NotFound();
+            }
+            return View("Orders/Details", order);
+        }
+
         // ******************************
         // 2. Раздел "Материалы"
         // ******************************
