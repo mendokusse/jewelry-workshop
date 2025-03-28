@@ -1,0 +1,169 @@
+@model workshop_web_app.Models.Order
+@using Microsoft.AspNetCore.Http
+@{
+    ViewData["Title"] = "Редактирование заказа";
+    bool isManager = User.IsInRole("Manager") || User.IsInRole("Admin");
+    bool isJeweler = User.IsInRole("Jeweler") && !isManager; // если ювелир, но не менеджер
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<form asp-action="EditOrder" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="OrderId" />
+
+    <div class="form-group">
+        <label asp-for="ProductTypeId">Тип изделия</label>
+        @if(isManager)
+        {
+            <input asp-for="ProductTypeId" class="form-control" />
+        }
+        else
+        {
+            <input asp-for="ProductTypeId" class="form-control" readonly="readonly" />
+        }
+    </div>
+
+    <div class="form-group">
+        <label asp-for="OrderComment">Комментарий</label>
+        @if(isManager)
+        {
+            <textarea asp-for="OrderComment" class="form-control"></textarea>
+        }
+        else
+        {
+            <textarea asp-for="OrderComment" class="form-control" readonly="readonly"></textarea>
+        }
+    </div>
+
+    <div class="form-group">
+        <label asp-for="OrderPrice">Цена</label>
+        @if(isManager)
+        {
+            <input asp-for="OrderPrice" class="form-control" />
+        }
+        else
+        {
+            <input asp-for="OrderPrice" class="form-control" readonly="readonly" />
+        }
+    </div>
+
+    <div class="form-group">
+        <label asp-for="OrderDate">Дата заказа</label>
+        @if(isManager)
+        {
+            <input asp-for="OrderDate" class="form-control" type="datetime-local" />
+        }
+        else
+        {
+            <input asp-for="OrderDate" class="form-control" type="datetime-local" readonly="readonly" />
+        }
+    </div>
+
+    <div class="form-group">
+        <label asp-for="OrderUpdateDate">Дата обновления</label>
+        @if(isManager)
+        {
+            <input asp-for="OrderUpdateDate" class="form-control" type="datetime-local" />
+        }
+        else
+        {
+            <input asp-for="OrderUpdateDate" class="form-control" type="datetime-local" readonly="readonly" />
+        }
+    </div>
+    <div class="form-group">
+        <label asp-for="StatusId">Статус заказа</label>
+        @if(isManager)
+        {
+            <select asp-for="StatusId" class="form-control" asp-items="(SelectList)ViewBag.Statuses"></select>
+        }
+        else
+        {
+            <input asp-for="StatusId" class="form-control" readonly="readonly" />
+        }
+    </div>
+
+    <!-- Секция для редактирования материалов заказа (OrderDetails) -->
+    <h3>Материалы заказа</h3>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>ID детали</th>
+                <th>Материал</th>
+                <th>Вес (кг)</th>
+                <th>Действия</th>
+            </tr>
+        </thead>
+        <tbody id="orderDetailsTable">
+            @for (int i = 0; i < Model.OrderDetails.Count; i++)
+            {
+                <tr>
+                    <td>
+                        @Html.HiddenFor(m => m.OrderDetails[i].DetailsListId)
+                        @Html.DisplayFor(m => m.OrderDetails[i].DetailsListId)
+                    </td>
+                    <td>
+                        @if(isManager)
+                        {
+                            @Html.EditorFor(m => m.OrderDetails[i].Material.MaterialName)
+                        }
+                        else
+                        {
+                            @Html.DisplayFor(m => m.OrderDetails[i].Material.MaterialName)
+                        }
+                    </td>
+                    <td>
+                        @if(isManager || isJeweler)
+                        {
+                            @Html.EditorFor(m => m.OrderDetails[i].OrderMaterialWeight)
+                        }
+                        else
+                        {
+                            @Html.DisplayFor(m => m.OrderDetails[i].OrderMaterialWeight)
+                        }
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-danger btn-sm" onclick="removeDetail(this)">Удалить</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <!-- Кнопка для добавления новой строки для материала -->
+    @if(isManager || isJeweler)
+    {
+        <button type="button" class="btn btn-secondary" onclick="addDetail()">Добавить материал</button>
+    }
+
+    <br /><br />
+    <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+</form>
+
+@section Scripts {
+    <script>
+        function addDetail() {
+            // Пример динамического добавления строки в таблицу деталей
+            var index = document.querySelectorAll('#orderDetailsTable tr').length;
+            var row = `<tr>
+                <td>
+                    <input name="OrderDetails[${index}].DetailsListId" type="hidden" value="0" />
+                    Новая
+                </td>
+                <td>
+                    <input class="form-control" name="OrderDetails[${index}].Material.MaterialName" type="text" value="" />
+                </td>
+                <td>
+                    <input class="form-control" name="OrderDetails[${index}].OrderMaterialWeight" type="number" step="0.01" value="0" />
+                </td>
+                <td>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="removeDetail(this)">Удалить</button>
+                </td>
+            </tr>`;
+            document.getElementById("orderDetailsTable").insertAdjacentHTML('beforeend', row);
+        }
+        function removeDetail(btn) {
+            btn.closest('tr').remove();
+        }
+    </script>
+}

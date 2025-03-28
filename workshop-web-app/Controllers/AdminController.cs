@@ -3,6 +3,10 @@ using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using workshop_web_app.Models;
 using workshop_web_app.Repositories;
+using Microsoft.AspNetCore.Mvc.Rendering;
+
+
+//подтянуть тип изделия в редактирование
 
 namespace workshop_web_app.Controllers
 {
@@ -12,12 +16,14 @@ namespace workshop_web_app.Controllers
         private readonly OrderRepository _orderRepo;
         private readonly MaterialRepository _materialRepo;
         private readonly UserRepository _userRepo;
+        private readonly StatusRepository _statusRepo;
 
-        public AdminController(OrderRepository orderRepo, MaterialRepository materialRepo, UserRepository userRepo)
+        public AdminController(OrderRepository orderRepo, MaterialRepository materialRepo, UserRepository userRepo, StatusRepository statusRepo)
         {
             _orderRepo = orderRepo;
             _materialRepo = materialRepo;
             _userRepo = userRepo;
+            _statusRepo = statusRepo;
         }
 
         [Authorize(Roles = "Admin,Jeweler,Manager,Accountant")]
@@ -37,27 +43,95 @@ namespace workshop_web_app.Controllers
             return View("Orders/Index", orders);
         }
 
-        // Редактирование заказа (доступно только для Admin и Manager)
-        [Authorize(Roles = "Admin,Manager")]
+        // GET: Admin/EditOrder/5
         [HttpGet]
         public async Task<IActionResult> EditOrder(int id)
         {
             var order = await _orderRepo.GetOrderByIdAsync(id);
             if (order == null)
                 return NotFound();
-            return View(order);
+
+            var statuses = await _statusRepo.GetAllStatusesAsync();
+            ViewBag.Statuses = new SelectList(statuses, "StatusId", "StatusName", order.StatusId);
+
+            return View("Orders/Edit", order);
         }
 
-        [Authorize(Roles = "Admin,Manager")]
+        // POST: Admin/EditOrder/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditOrder(int id, Order order)
+        public async Task<IActionResult> EditOrder(int id, Order postedOrder)
         {
-            if (id != order.OrderId)
+            if (id != postedOrder.OrderId)
+            {
                 return BadRequest();
-            if (await _orderRepo.UpdateOrderAsync(order))
-                return RedirectToAction("Orders");
-            return View(order);
+            }
+
+            // Загружаем оригинальный заказ из БД
+            var originalOrder = await _orderRepo.GetOrderByIdAsync(id);
+            if (originalOrder == null)
+            {
+                return NotFound();
+            }
+
+            // Если пользователь - менеджер (или администратор), обновляем общую информацию заказа.
+            // Менеджеры могут редактировать все поля заказа.
+            if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+            {
+                // Обновляем поля, которые редактируются в форме.
+                originalOrder.ProductTypeId = postedOrder.ProductTypeId;
+                originalOrder.OrderComment = postedOrder.OrderComment;
+                originalOrder.OrderPrice = postedOrder.OrderPrice;
+                originalOrder.OrderDate = postedOrder.OrderDate;
+                originalOrder.OrderUpdateDate = postedOrder.OrderUpdateDate;
+                // Дополнительные поля, если форма их предоставляет.
+            }
+
+            // Если пользователь - ювелир (и не менеджер), то он может редактировать только материалы заказа.
+            if (User.IsInRole("Jeweler") && !User.IsInRole("Manager"))
+            {
+                // Здесь мы оставляем оригинальные данные заказа, за исключением деталей заказа.
+                // Обновляем только список OrderDetails.
+                originalOrder.OrderDetails = postedOrder.OrderDetails;
+            }
+            else
+            {
+                // Для пользователей с полными правами (Admin/Manager) мы можем также обновлять детали заказа.
+                // В этом примере реализуем полное обновление деталей: удаляем старые и добавляем новые.
+                var currentOrder = await _orderRepo.GetOrderByIdAsync(originalOrder.OrderId);
+                if (currentOrder != null && currentOrder.OrderDetails != null)
+                {
+                    foreach (var detail in currentOrder.OrderDetails)
+                    {
+                        await _orderRepo.DeleteOrderDetailAsync(detail.DetailsListId);
+                    }
+                }
+                if (postedOrder.OrderDetails != null)
+                {
+                    originalOrder.OrderDetails = postedOrder.OrderDetails;
+                }
+            }
+
+            // Теперь обновляем заказ в БД
+            bool updated = await _orderRepo.UpdateOrderAsync(originalOrder);
+            if (!updated)
+            {
+                ModelState.AddModelError("", "Не удалось обновить заказ.");
+                return View(originalOrder);
+            }
+
+            // Обновляем детали заказа (сохранение деталей происходит отдельно, если их изменили)
+            if (originalOrder.OrderDetails != null)
+            {
+                foreach (var detail in originalOrder.OrderDetails)
+                {
+                    // Обязательно устанавливаем OrderId для каждой детали
+                    detail.OrderId = originalOrder.OrderId;
+                    await _orderRepo.AddOrderDetailAsync(detail);
+                }
+            }
+
+            return RedirectToAction("Orders", "Admin");
         }
 
         [Authorize(Roles = "Admin,Jeweler,Manager")]

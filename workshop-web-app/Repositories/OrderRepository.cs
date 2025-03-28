@@ -291,16 +291,51 @@ namespace workshop_web_app.Repositories
             {
                 await connection.OpenAsync();
 
+                // Если объект Material задан, но MaterialId не установлен (0), пытаемся найти его по имени
+                if (detail.Material != null && detail.Material.MaterialId == 0)
+                {
+                    // Попытка найти материал по имени
+                    string sqlFind = "SELECT material_id FROM materials WHERE material_name = @material_name LIMIT 1;";
+                    using (var cmdFind = new NpgsqlCommand(sqlFind, connection))
+                    {
+                        cmdFind.Parameters.AddWithValue("material_name", detail.Material.MaterialName);
+                        var result = await cmdFind.ExecuteScalarAsync();
+                        if (result != null)
+                        {
+                            detail.Material.MaterialId = (int)result;
+                        }
+                        else
+                        {
+                            // Если материал не найден, вставляем новый с дефолтными значениями.
+                            // Обратите внимание: здесь мы используем фиксированные значения для unit_id, material_price, material_quantity,
+                            // их нужно настроить под вашу логику.
+                            string sqlInsertMaterial = @"
+                                INSERT INTO materials (unit_id, material_price, material_name, material_quantity)
+                                VALUES (@unit_id, @material_price, @material_name, @material_quantity)
+                                RETURNING material_id;
+                            ";
+                            using (var cmdInsert = new NpgsqlCommand(sqlInsertMaterial, connection))
+                            {
+                                // Здесь можно задать unit_id, material_price и material_quantity по умолчанию.
+                                cmdInsert.Parameters.AddWithValue("unit_id", 1);
+                                cmdInsert.Parameters.AddWithValue("material_price", 0m);
+                                cmdInsert.Parameters.AddWithValue("material_name", detail.Material.MaterialName);
+                                cmdInsert.Parameters.AddWithValue("material_quantity", 0f);
+                                detail.Material.MaterialId = (int)await cmdInsert.ExecuteScalarAsync();
+                            }
+                        }
+                    }
+                }
+
                 string sql = @"
                     INSERT INTO order_details (order_id, material_id, order_material_weight)
                     VALUES (@order_id, @material_id, @order_material_weight)
                     RETURNING details_list_id;
                 ";
-
                 using (var command = new NpgsqlCommand(sql, connection))
                 {
                     command.Parameters.AddWithValue("order_id", detail.OrderId);
-                    command.Parameters.AddWithValue("material_id", detail.MaterialId);
+                    command.Parameters.AddWithValue("material_id", detail.Material != null ? detail.Material.MaterialId : (object)DBNull.Value);
                     command.Parameters.AddWithValue("order_material_weight", detail.OrderMaterialWeight);
 
                     newDetailId = (int)await command.ExecuteScalarAsync();
