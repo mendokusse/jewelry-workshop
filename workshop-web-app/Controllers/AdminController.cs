@@ -5,6 +5,9 @@ using workshop_web_app.Models;
 using workshop_web_app.Repositories;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Security.Claims;
+using System;
+using System.Linq;
+using System.Text;
 
 //подтянуть тип изделия в редактирование
 
@@ -251,12 +254,82 @@ namespace workshop_web_app.Controllers
         // 4. Раздел "Отчёты"
         // ******************************
 
+        
         // Страница для создания отчётов (доступна для Accountant и Admin)
-        [Authorize(Roles = "Accountant,Admin")]
+        [Authorize(Roles = "Admin,Accountant")]
         public IActionResult Reports()
         {
-            // Здесь можно реализовать логику генерации отчётов или передать данные в представление.
-            return View();
+            return View("Reports/Index");
+        }
+
+        [Authorize(Roles = "Admin,Accountant")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> GenerateReport(DateTime? startDate, DateTime? endDate)
+        {
+            var orders = await _orderRepo.GetAllOrdersAsync();
+
+            if (startDate.HasValue && endDate.HasValue)
+            {
+                orders = orders
+                    .Where(o => o.OrderDate.HasValue &&
+                                o.OrderDate.Value >= startDate.Value &&
+                                o.OrderDate.Value <= endDate.Value)
+                    .ToList();
+            }
+
+            var completedOrders = orders
+                .Where(o => o.Status != null && o.Status.StatusName.Equals("Выполнен", StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            var managerReport = completedOrders
+                .Where(o => o.ManagerUser != null)
+                .GroupBy(o => new { o.ManagerUser.UserId, o.ManagerUser.UserName })
+                .Select(g => new {
+                    WorkerId = g.Key.UserId,
+                    WorkerName = g.Key.UserName,
+                    OrderCount = g.Count(),
+                    TotalSum = g.Sum(o => o.OrderPrice ?? 0)
+                })
+                .ToList();
+
+            var jewelerReport = completedOrders
+                .Where(o => o.JewelerUser != null)
+                .GroupBy(o => new { o.JewelerUser.UserId, o.JewelerUser.UserName })
+                .Select(g => new {
+                    WorkerId = g.Key.UserId,
+                    WorkerName = g.Key.UserName,
+                    OrderCount = g.Count(),
+                    TotalSum = g.Sum(o => o.OrderPrice ?? 0)
+                })
+                .ToList();
+
+            var csv = new StringBuilder();
+            csv.AppendLine("Отчет о выполненных заказах");
+            csv.AppendLine($"Дата отчета: {DateTime.Now}");
+            if (startDate.HasValue && endDate.HasValue)
+            {
+                csv.AppendLine($"За период: {startDate.Value:dd.MM.yyyy} - {endDate.Value:dd.MM.yyyy}");
+            }
+            csv.AppendLine();
+
+            csv.AppendLine("Менеджеры");
+            csv.AppendLine("Имя работника,Выполненные заказы,Итого");
+            foreach (var item in managerReport)
+            {
+                csv.AppendLine($"{item.WorkerName},{item.OrderCount},{item.TotalSum.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)}");
+            }
+            csv.AppendLine();
+
+            csv.AppendLine("Ювелиры");
+            csv.AppendLine("Имя работника,Выполненные заказы,Итого");
+            foreach (var item in jewelerReport)
+            {
+                csv.AppendLine($"{item.WorkerName},{item.OrderCount},{item.TotalSum.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)}");
+            }
+
+            byte[] bytes = Encoding.UTF8.GetBytes(csv.ToString());
+            return File(bytes, "text/csv", "report.csv");
         }
     }
 }
