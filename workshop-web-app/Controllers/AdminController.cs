@@ -17,13 +17,15 @@ namespace workshop_web_app.Controllers
         private readonly MaterialRepository _materialRepo;
         private readonly UserRepository _userRepo;
         private readonly StatusRepository _statusRepo;
+        private readonly RoleRepository _roleRepo;
 
-        public AdminController(OrderRepository orderRepo, MaterialRepository materialRepo, UserRepository userRepo, StatusRepository statusRepo)
+        public AdminController(OrderRepository orderRepo, MaterialRepository materialRepo, UserRepository userRepo, StatusRepository statusRepo, RoleRepository roleRepo)
         {
             _orderRepo = orderRepo;
             _materialRepo = materialRepo;
             _userRepo = userRepo;
             _statusRepo = statusRepo;
+            _roleRepo = roleRepo;
         }
 
         [Authorize(Roles = "Admin,Jeweler,Manager,Accountant")]
@@ -216,56 +218,33 @@ namespace workshop_web_app.Controllers
         // 3. Раздел "Пользователи"
         // ******************************
 
-        // Просмотр списка пользователей (только Admin)
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Users()
         {
             var users = await _userRepo.GetAllUsersAsync();
-            return View(users);
+            var roles = await _roleRepo.GetAllRolesAsync();
+            ViewBag.Roles = new SelectList(roles, "RoleId", "RoleName");
+            return View("Users/Index", users);
         }
 
-        // Удаление пользователя (только Admin)
-        [Authorize(Roles = "Admin")]
-        [HttpGet]
-        public async Task<IActionResult> DeleteUser(int id)
-        {
-            var user = await _userRepo.GetUserByIdAsync(id);
-            if (user == null)
-                return NotFound();
-            return View(user);
-        }
-
-        [Authorize(Roles = "Admin")]
-        [HttpPost, ActionName("DeleteUser")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteUserConfirmed(int id)
-        {
-            if (await _userRepo.DeleteUserByIdAsync(id))
-                return RedirectToAction("Users");
-            return NotFound();
-        }
-
-        // Изменение роли пользователя (только Admin)
-        [Authorize(Roles = "Admin")]
-        [HttpGet]
-        public async Task<IActionResult> EditUserRole(int id)
-        {
-            var user = await _userRepo.GetUserByIdAsync(id);
-            if (user == null)
-                return NotFound();
-            return View(user);
-        }
-
-        [Authorize(Roles = "Admin")]
+        // POST: /Admin/UpdateUserRole
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditUserRole(int id, User user)
+        public async Task<IActionResult> UpdateUserRole(int UserId, int RoleId)
         {
-            if (id != user.UserId)
-                return BadRequest();
-            if (await _userRepo.UpdateUserAsync(user))
+            var user = await _userRepo.GetUserByIdAsync(UserId);
+            if (user == null)
+                return NotFound();
+
+            user.RoleId = RoleId;
+            bool updated = await _userRepo.UpdateUserAsync(user);
+            if (updated)
                 return RedirectToAction("Users");
-            return View(user);
+            
+            ModelState.AddModelError("", "Ошибка при обновлении роли пользователя.");
+            var users = await _userRepo.GetAllUsersAsync();
+            var roles = await _roleRepo.GetAllRolesAsync();
+            ViewBag.Roles = new SelectList(roles, "RoleId", "RoleName");
+            return View("Users/Index", users);
         }
 
         // ******************************
