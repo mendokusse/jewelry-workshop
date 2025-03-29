@@ -1,0 +1,43 @@
+@model workshop_web_app.Models.Material
+
+@{
+    ViewData["Title"] = "Редактирование материала";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<form asp-action="EditMaterial" asp-controller="Admin" method="post">
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(m => m.MaterialId)
+    
+    <div class="form-group">
+        <label asp-for="MaterialName" class="control-label">Название материала</label>
+        <input asp-for="MaterialName" class="form-control" readonly="readonly" />
+    </div>
+
+    <div class="form-group">
+        <label asp-for="MaterialPrice" class="control-label">Цена материала</label>
+        <input asp-for="MaterialPrice" class="form-control" />
+        <span asp-validation-for="MaterialPrice" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="MaterialQuantity" class="control-label">Количество материала</label>
+        <input asp-for="MaterialQuantity" class="form-control" />
+        <span asp-validation-for="MaterialQuantity" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Unit.UnitFullName" class="control-label">Единица измерения</label>
+        <input asp-for="Unit.UnitFullName" class="form-control" readonly="readonly" />
+    </div>
+
+    <div class="form-group mt-3">
+        <input type="submit" value="Сохранить" class="btn btn-primary" />
+        <a asp-action="Index" asp-controller="Materials" class="btn btn-secondary">Отмена</a>
+    </div>
+</form>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

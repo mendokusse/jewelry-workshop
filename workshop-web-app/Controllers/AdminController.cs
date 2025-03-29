@@ -186,19 +186,30 @@ namespace workshop_web_app.Controllers
             var material = await _materialRepo.GetMaterialByIdAsync(id);
             if (material == null)
                 return NotFound();
-            return View(material);
+            return View("Materials/Edit", material);
         }
 
         [Authorize(Roles = "Admin,Jeweler")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditMaterial(int id, Material material)
+        public async Task<IActionResult> EditMaterial(int id, Material postedMaterial)
         {
-            if (id != material.MaterialId)
+            if (id != postedMaterial.MaterialId)
                 return BadRequest();
-            if (await _materialRepo.UpdateMaterialAsync(material))
+
+            // Загружаем оригинальный материал из базы
+            var originalMaterial = await _materialRepo.GetMaterialByIdAsync(id);
+            if (originalMaterial == null)
+                return NotFound();
+
+            originalMaterial.MaterialName = postedMaterial.MaterialName;
+            originalMaterial.MaterialPrice = postedMaterial.MaterialPrice;
+            originalMaterial.MaterialQuantity = postedMaterial.MaterialQuantity;
+
+            bool updated = await _materialRepo.UpdateMaterialAsync(originalMaterial);
+            if (updated)
                 return RedirectToAction("Materials");
-            return View(material);
+            return View(originalMaterial);
         }
 
         // ******************************
