@@ -12,17 +12,9 @@
     @Html.AntiForgeryToken()
     @Html.HiddenFor(m => m.OrderId)
 
-    <!-- Общая информация заказа (редактируется менеджером/admin, для ювелира – только для чтения) -->
     <div class="form-group">
         <label asp-for="ProductTypeId">Тип изделия</label>
-        @if(isManager)
-        {
-            <input asp-for="ProductTypeId" class="form-control" />
-        }
-        else
-        {
-            <input asp-for="ProductTypeId" class="form-control" readonly="readonly" />
-        }
+        <select asp-for="ProductTypeId" class="form-control" asp-items="(SelectList)ViewBag.ProductTypes"></select>
     </div>
 
     <div class="form-group">
@@ -71,10 +63,8 @@
         }
     </div>
 
-    <!-- Новые поля для привязанных пользователей -->
     <div class="form-group">
         <label>Менеджер</label>
-        <!-- Менеджер не редактируется, только отображается -->
         <input type="text" class="form-control" value="@Model.ManagerUser?.UserName" readonly="readonly" />
     </div>
 
@@ -82,12 +72,10 @@
         <label>Ювелир</label>
         @if(isManager)
         {
-            <!-- Если текущий пользователь имеет роль Manager или Admin, показываем выпадающий список -->
             <select asp-for="JewelerUserId" class="form-control" asp-items="(SelectList)ViewBag.Jewelers"></select>
         }
         else
         {
-            <!-- Если пользователь - ювелир, выводим информацию только для чтения -->
             <input type="text" class="form-control" value="@Model.JewelerUser?.UserName" readonly="readonly" />
         }
     </div>

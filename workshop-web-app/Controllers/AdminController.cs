@@ -9,7 +9,8 @@ using System;
 using System.Linq;
 using System.Text;
 
-//подтянуть тип изделия в редактирование
+// вывод материалов в список
+// подсчёт себестоимости заказа 
 
 namespace workshop_web_app.Controllers
 {
@@ -21,14 +22,16 @@ namespace workshop_web_app.Controllers
         private readonly UserRepository _userRepo;
         private readonly StatusRepository _statusRepo;
         private readonly RoleRepository _roleRepo;
+        private readonly ProductTypeRepository _productTypeRepo;
 
-        public AdminController(OrderRepository orderRepo, MaterialRepository materialRepo, UserRepository userRepo, StatusRepository statusRepo, RoleRepository roleRepo)
+        public AdminController(OrderRepository orderRepo, MaterialRepository materialRepo, UserRepository userRepo, StatusRepository statusRepo, RoleRepository roleRepo, ProductTypeRepository productTypeRepo)
         {
             _orderRepo = orderRepo;
             _materialRepo = materialRepo;
             _userRepo = userRepo;
             _statusRepo = statusRepo;
             _roleRepo = roleRepo;
+            _productTypeRepo = productTypeRepo;
         }
 
         [Authorize(Roles = "Admin,Jeweler,Manager,Accountant")]
@@ -79,6 +82,12 @@ namespace workshop_web_app.Controllers
 
             var statuses = await _statusRepo.GetAllStatusesAsync();
             ViewBag.Statuses = new SelectList(statuses, "StatusId", "StatusName", order.StatusId);
+
+            var productTypes = await _productTypeRepo.GetAllProductTypesAsync();
+            ViewBag.ProductTypes = new SelectList(productTypes, "ProductTypeId", "ProductTypeName", order.ProductTypeId);
+
+            var materials = await _materialRepo.GetAllMaterialsAsync();
+            ViewBag.Materials = new SelectList(materials, "MaterialId", "MaterialName");
 
             return View("Orders/Edit", order);
         }
