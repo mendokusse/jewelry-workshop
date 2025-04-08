@@ -10,26 +10,6 @@
 
 <div id="modalContainer"></div>
 
-@section Scripts {
-  <script>
-    $(document).ready(function(){
-      $("#makeOrderBtn").click(function(){
-          $.ajax({
-              url: '@Url.Action("Create", "Order")',
-              type: 'GET',
-              success: function(data) {
-                  $("#modalContainer").html(data);
-                  $("#createOrderModal").modal("show");
-              },
-              error: function() {
-                  alert("Ошибка при загрузке формы заказа.");
-              }
-          });
-      });
-    });
-  </script>
-}
-
 <!-- Форма фильтрации -->
 <form method="get" asp-controller="Catalog" asp-action="Index">
     <div class="row">
@@ -75,3 +55,46 @@
         </div>
     }
 </div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function(){
+            $("#makeOrderBtn").click(function(){
+                $.ajax({
+                    url: '@Url.Action("Create", "Order")',
+                    type: 'GET',
+                    success: function(data) {
+                        $("#modalContainer").html(data);
+                        $("#createOrderModal").modal("show");
+                    },
+                    error: function() {
+                        alert("Ошибка при загрузке формы заказа.");
+                    }
+                });
+            });
+            
+            $(document).on("click", "#submitOrderBtn", function(){
+                var form = $("#createOrderForm");
+                console.log("Отправляем данные формы:", form.serialize());
+                $.ajax({
+                    type: "POST",
+                    url: form.attr("action"),
+                    data: form.serialize(),
+                    success: function(response) {
+                        console.log("Ответ сервера:", response);
+                        if(response.success){
+                            $("#createOrderModal").modal("hide");
+                            window.location.reload();
+                        } else {
+                            alert("Ошибка при создании заказа.");
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Ошибка при отправке данных:", status, error);
+                        alert("Ошибка при отправке данных.");
+                    }
+                });
+            });
+        });
+    </script>
+}

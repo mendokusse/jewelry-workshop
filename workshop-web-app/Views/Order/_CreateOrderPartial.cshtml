@@ -5,7 +5,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="createOrderModalLabel">Оформление заказа</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Закрыть">
+        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Закрыть">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
@@ -25,7 +25,7 @@
         </form>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
         <button type="button" class="btn btn-primary" id="submitOrderBtn">Сделать заказ</button>
       </div>
     </div>
@@ -34,30 +34,36 @@
 
 @section Scripts {
   <script>
-    $(document).ready(function() {
-      // Отобразим модальное окно при загрузке (или по событию)
-      $("#createOrderModal").modal("show");
+    // Используем Bootstrap 5 для модальных окон (без jQuery)
+    document.addEventListener("DOMContentLoaded", function () {
+        var createOrderModalEl = document.getElementById("createOrderModal");
+        var createOrderModal = new bootstrap.Modal(createOrderModalEl);
+        createOrderModal.show();
 
-      // Обработчик для кнопки отправки формы
-      $("#submitOrderBtn").click(function() {
-          var form = $("#createOrderForm");
-          $.ajax({
-              type: "POST",
-              url: form.attr("action"),
-              data: form.serialize(),
-              success: function(response) {
-                  if(response.success){
-                      $("#createOrderModal").modal("hide");
-                      window.location.reload();
-                  } else {
-                      alert("Ошибка при создании заказа.");
-                  }
-              },
-              error: function() {
-                  alert("Ошибка при отправке данных.");
-              }
-          });
-      });
+        document.getElementById("submitOrderBtn").addEventListener("click", function () {
+            var form = document.getElementById("createOrderForm");
+            // Вывод данных формы для отладки
+            console.log("Данные формы:", new URLSearchParams(new FormData(form)).toString());
+
+            fetch(form.getAttribute("action"), {
+                method: "POST",
+                body: new FormData(form)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Ответ сервера:", data);
+                if (data.success) {
+                    createOrderModal.hide();
+                    window.location.reload();
+                } else {
+                    alert("Ошибка при создании заказа.");
+                }
+            })
+            .catch(error => {
+                console.error("Ошибка при отправке данных:", error);
+                alert("Ошибка при отправке данных.");
+            });
+        });
     });
   </script>
 }

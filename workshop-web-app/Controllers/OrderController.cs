@@ -1,39 +1,35 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using System;
 using System.Threading.Tasks;
 using workshop_web_app.Models;
 using workshop_web_app.Repositories;
 
 namespace workshop_web_app.Controllers
 {
+    [Authorize]
     public class OrderController : Controller
     {
         private readonly OrderRepository _orderRepo;
+        private readonly ProductTypeRepository _productTypeRepo;
+        private readonly UserRepository _userRepo;
 
-        public OrderController(OrderRepository orderRepo)
+        public OrderController(OrderRepository orderRepo, ProductTypeRepository productTypeRepo, UserRepository userRepo)
         {
             _orderRepo = orderRepo;
-        }
-
-        public async Task<IActionResult> Index()
-        {
-            var orders = await _orderRepo.GetAllOrdersAsync();
-            return View(orders);
-        }
-
-        public async Task<IActionResult> Details(int id)
-        {
-            var order = await _orderRepo.GetOrderByIdAsync(id);
-            if (order == null)
-            {
-                return NotFound();
-            }
-            return View(order);
+            _productTypeRepo = productTypeRepo;
+            _userRepo = userRepo;
         }
 
         // GET: /Order/Create
-        public IActionResult Create()
+        [HttpGet]
+        public async Task<IActionResult> Create()
         {
-            return View();
+            var productTypes = await _productTypeRepo.GetAllProductTypesAsync();
+            ViewBag.ProductTypes = new SelectList(productTypes, "ProductTypeId", "ProductTypeName");
+            // Возвращаем частичное представление для создания заказа (форма в модальном окне)
+            return PartialView("_CreateOrderPartial", new Order());
         }
 
         // POST: /Order/Create
@@ -41,106 +37,54 @@ namespace workshop_web_app.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Order order)
         {
-            if (ModelState.IsValid)
+            Console.WriteLine("В методе OrderController.Create (POST) начат процесс создания заказа.");
+
+            // Получаем идентификатор заказчика из клеймов
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)
+                              ?? User.FindFirst("UserId");
+            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int customerUserId))
             {
-                // Сначала добавляем заказ
-                int newOrderId = await _orderRepo.AddOrderAsync(order);
-                
-                // Если переданы детали заказа, добавляем их
-                if (order.OrderDetails != null)
-                {
-                    foreach (var detail in order.OrderDetails)
-                    {
-                        detail.OrderId = newOrderId;
-                        await _orderRepo.AddOrderDetailAsync(detail);
-                    }
-                }
-                
-                return RedirectToAction(nameof(Details), new { id = newOrderId });
+                Console.WriteLine("Не удалось извлечь UserId из клеймов. Перенаправление на Login.");
+                return RedirectToAction("Login", "Account");
             }
-            return View(order);
-        }
+            Console.WriteLine("UserId из клеймов: " + userIdClaim.Value);
+            Console.WriteLine("Parsed customerUserId: " + customerUserId);
+            order.CustomerUserId = customerUserId;
 
-        // GET: /Order/Edit/5
-        public async Task<IActionResult> Edit(int id)
-        {
-            var order = await _orderRepo.GetOrderByIdAsync(id);
-            if (order == null)
+            // Назначаем менеджера: выбираем первого пользователя с ролью "Manager"
+            var managers = await _userRepo.GetUsersByRoleAsync("Manager");
+            if (managers != null && managers.Count > 0)
             {
-                return NotFound();
-            }
-            return View(order);
-        }
-
-        // POST: /Order/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, Order order)
-        {
-            if (id != order.OrderId)
-            {
-                return BadRequest();
-            }
-
-            if (ModelState.IsValid)
-            {
-                bool updated = await _orderRepo.UpdateOrderAsync(order);
-                if (updated)
-                {
-                    // Для обновления деталей: сначала получаем текущие детали заказа,
-                    // затем удаляем их все, а после добавляем новые из переданной модели.
-                    var existingOrder = await _orderRepo.GetOrderByIdAsync(order.OrderId);
-                    if (existingOrder != null && existingOrder.OrderDetails != null)
-                    {
-                        foreach (var existingDetail in existingOrder.OrderDetails)
-                        {
-                            await _orderRepo.DeleteOrderDetailAsync(existingDetail.DetailsListId);
-                        }
-                    }
-
-                    if (order.OrderDetails != null)
-                    {
-                        foreach (var detail in order.OrderDetails)
-                        {
-                            detail.OrderId = order.OrderId;
-                            await _orderRepo.AddOrderDetailAsync(detail);
-                        }
-                    }
-
-                    return RedirectToAction(nameof(Details), new { id = order.OrderId });
-                }
-                else
-                {
-                    return NotFound();
-                }
-            }
-            return View(order);
-        }
-
-        // GET: /Order/Delete/5
-        public async Task<IActionResult> Delete(int id)
-        {
-            var order = await _orderRepo.GetOrderByIdAsync(id);
-            if (order == null)
-            {
-                return NotFound();
-            }
-            return View(order);
-        }
-
-        // POST: /Order/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            bool deleted = await _orderRepo.DeleteOrderAsync(id);
-            if (deleted)
-            {
-                return RedirectToAction(nameof(Index));
+                order.ManagerUserId = managers[0].UserId;
+                Console.WriteLine("Назначен менеджер с UserId: " + order.ManagerUserId);
             }
             else
             {
-                return NotFound();
+                order.ManagerUserId = null;
+                Console.WriteLine("Менеджер не найден, ManagerUserId установлен в null.");
+            }
+
+            // Устанавливаем статус заказа "Создан" (предположим, что статус 'Создан' имеет id = 1)
+            order.StatusId = 1;
+            order.OrderDate = DateTime.Now;
+            order.OrderUpdateDate = null;
+            order.OrderDetails = null;
+            Console.WriteLine("Установлены OrderStatusId = " + order.StatusId + ", OrderDate = " + order.OrderDate);
+
+            int newOrderId = await _orderRepo.AddOrderAsync(order);
+            Console.WriteLine("Получен новый идентификатор заказа: " + newOrderId);
+            if (newOrderId > 0)
+            {
+                Console.WriteLine("Заказ успешно создан.");
+                return Json(new { success = true, orderId = newOrderId });
+            }
+            else
+            {
+                ModelState.AddModelError("", "Не удалось создать заказ.");
+                var productTypes = await _productTypeRepo.GetAllProductTypesAsync();
+                ViewBag.ProductTypes = new SelectList(productTypes, "ProductTypeId", "ProductTypeName", order.ProductTypeId);
+                Console.WriteLine("Ошибка при создании заказа.");
+                return PartialView("_CreateOrderPartial", order);
             }
         }
     }

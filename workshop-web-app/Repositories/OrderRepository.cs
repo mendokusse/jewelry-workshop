@@ -13,8 +13,6 @@ namespace workshop_web_app.Repositories
         public OrderRepository(IConfiguration configuration) : base(configuration)
         {
         }
-
-        // Метод для получения всех заказов с данными о пользователях
         public async Task<List<Order>> GetAllOrdersAsync()
         {
             var orders = new List<Order>();
@@ -70,7 +68,7 @@ namespace workshop_web_app.Repositories
                             JewelerUserId = reader.IsDBNull(4) ? default(int?) : reader.GetInt32(4),
                             StatusId = reader.GetInt32(5),
                             OrderComment = reader.IsDBNull(6) ? default(string?) : reader.GetString(6),
-                            OrderPrice = reader.GetDecimal(7),
+                            OrderPrice = reader.IsDBNull(7) ? 0 : reader.GetDecimal(7),
                             OrderDate = reader.IsDBNull(8) ? (DateTime?)null : reader.GetDateTime(8),
                             OrderUpdateDate = reader.IsDBNull(9) ? (DateTime?)null : reader.GetDateTime(9),
                             ProductType = new ProductType
@@ -179,7 +177,7 @@ namespace workshop_web_app.Repositories
                                 JewelerUserId = reader.IsDBNull(4) ? default(int?) : reader.GetInt32(4),
                                 StatusId = reader.GetInt32(5),
                                 OrderComment = reader.IsDBNull(6) ? default(string) : reader.GetString(6),
-                                OrderPrice = reader.GetDecimal(7),
+                                OrderPrice = reader.IsDBNull(7) ? 0 : reader.GetDecimal(7),
                                 OrderDate = reader.IsDBNull(8) ? (DateTime?)null : reader.GetDateTime(8),
                                 OrderUpdateDate = reader.IsDBNull(9) ? (DateTime?)null : reader.GetDateTime(9),
                                 ProductType = new ProductType
