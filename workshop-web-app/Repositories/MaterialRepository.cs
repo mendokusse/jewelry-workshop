@@ -13,6 +13,26 @@ namespace workshop_web_app.Repositories
         {
         }
 
+        public async Task<decimal> GetMaterialPriceByIdAsync(int materialId)
+        {
+            decimal price = 0;
+            using (var connection = GetConnection())
+            {
+                await connection.OpenAsync();
+                string sql = "SELECT material_price FROM materials WHERE material_id = @materialId;";
+                using (var command = new NpgsqlCommand(sql, connection))
+                {
+                    command.Parameters.AddWithValue("materialId", materialId);
+                    var result = await command.ExecuteScalarAsync();
+                    if (result != null && result != DBNull.Value)
+                    {
+                        price = (decimal)result;
+                    }
+                }
+            }
+            return price;
+        }
+
         public async Task<List<Material>> GetAllMaterialsAsync()
         {
             var materials = new List<Material>();

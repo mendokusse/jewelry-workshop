@@ -117,6 +117,26 @@ namespace workshop_web_app.Controllers
                 originalOrder.JewelerUserId = postedOrder.JewelerUserId;
             }
 
+            decimal newCalculatedPrice = 0;
+
+            if (postedOrder.OrderDetails != null)
+            {
+                foreach (var newDetail in postedOrder.OrderDetails)
+                {
+                    newDetail.OrderId = originalOrder.OrderId;
+                    
+                    decimal materialPrice = await _materialRepo.GetMaterialPriceByIdAsync(newDetail.Material.MaterialId);
+                    
+                    decimal detailCost = ((decimal)newDetail.OrderMaterialWeight) * materialPrice;
+                    
+                    newCalculatedPrice += detailCost;
+                    
+                    await _orderRepo.AddOrderDetailAsync(newDetail);
+                }
+            }
+            
+            originalOrder.OrderPrice = newCalculatedPrice * 1.5m;
+
             if (User.IsInRole("Jeweler") && !User.IsInRole("Manager"))
             {
                 originalOrder.OrderDetails = postedOrder.OrderDetails;
