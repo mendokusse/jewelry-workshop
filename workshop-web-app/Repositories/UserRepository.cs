@@ -177,7 +177,7 @@ namespace workshop_web_app.Repositories
                 {
                     command.Parameters.AddWithValue("role_id", user.RoleId);
                     command.Parameters.AddWithValue("user_name", user.UserName);
-                    command.Parameters.AddWithValue("user_password_hash", user.UserPasswordHash);
+                    command.Parameters.Add("user_password_hash", NpgsqlTypes.NpgsqlDbType.Varchar).Value = (object)user.UserPasswordHash ?? DBNull.Value;
                     command.Parameters.AddWithValue("user_phone", (object)user.UserPhone ?? DBNull.Value);
                     command.Parameters.AddWithValue("user_email", (object)user.UserEmail ?? DBNull.Value);
                     command.Parameters.AddWithValue("user_id", user.UserId);

@@ -65,48 +65,78 @@ namespace workshop_web_app.Controllers
             return View(user);
         }
 
-        public async Task<IActionResult> Edit(int id)
+        [Route("Account/Edit")]
+        [HttpGet]
+        public async Task<IActionResult> Edit()
         {
-            var user = await _userRepo.GetUserByIdAsync(id);
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier) ?? User.FindFirst("UserId");
+            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
+            {
+                return RedirectToAction("Login");
+            }
+            var user = await _userRepo.GetUserByIdAsync(userId);
             if (user == null)
             {
                 return NotFound();
             }
-            return View(user);
+            return View("~/Views/Account/Edit.cshtml", user);
         }
 
+        [Route("Account/Edit")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, User user)
+        public async Task<IActionResult> Edit(User formModel, string newPassword, string confirmPassword)
         {
-            if (id != user.UserId)
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier) 
+                            ?? User.FindFirst("UserId");
+            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int currentUserId))
             {
-                return BadRequest();
+                return RedirectToAction("~/Views/Account/Login.cshtml");
             }
 
-            if (ModelState.IsValid)
+            if (formModel.UserId != currentUserId)
             {
-                bool updated = await _userRepo.UpdateUserAsync(user);
-                if (updated)
-                {
-                    return RedirectToAction(nameof(Details), new { id = user.UserId });
-                }
-                else
-                {
-                    return NotFound();
-                }
+                return Forbid();
             }
-            return View(user);
-        }
 
-        public async Task<IActionResult> Delete(int id)
-        {
-            var user = await _userRepo.GetUserByIdAsync(id);
-            if (user == null)
+            var originalUser = await _userRepo.GetUserByIdAsync(currentUserId);
+            if (originalUser == null)
             {
-                return NotFound();
+                return RedirectToAction("~/Views/Account/Login.cshtml");
             }
-            return View(user);
+
+            if (!string.IsNullOrEmpty(formModel.UserEmail) && formModel.UserEmail != originalUser.UserEmail)
+            {
+                originalUser.UserEmail = formModel.UserEmail;
+            }
+
+            if (!string.IsNullOrEmpty(formModel.UserName) && formModel.UserName != originalUser.UserName)
+            {
+                originalUser.UserName = formModel.UserName;
+            }
+
+            if (!string.IsNullOrEmpty(formModel.UserPhone) && formModel.UserPhone != originalUser.UserPhone)
+            {
+                originalUser.UserPhone = formModel.UserPhone;
+            }
+
+            if (!string.IsNullOrEmpty(newPassword))
+            {
+                if (newPassword != confirmPassword)
+                {
+                    ModelState.AddModelError("", "Пароли не совпадают.");
+                    return View("~/Views/Account/Edit.cshtml", originalUser);
+                }
+                originalUser.UserPasswordHash = newPassword;
+            }
+
+            bool updated = await _userRepo.UpdateUserAsync(originalUser);
+            if (!updated)
+            {
+                ModelState.AddModelError("", "Ошибка при обновлении данных аккаунта.");
+                return View("~/Views/Account/Edit.cshtml", originalUser);
+            }
+            return RedirectToAction("Index");
         }
 
         [HttpPost, ActionName("Delete")]
