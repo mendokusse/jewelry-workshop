@@ -1,0 +1,63 @@
+@model workshop_web_app.Models.Order
+
+<div class="modal fade" id="createOrderModal" tabindex="-1" role="dialog" aria-labelledby="createOrderModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="createOrderModalLabel">Оформление заказа</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Закрыть">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="createOrderForm" asp-action="Create" method="post">
+          @Html.AntiForgeryToken()
+          
+          <div class="form-group">
+            <label asp-for="ProductTypeId">Тип изделия</label>
+            <select asp-for="ProductTypeId" class="form-control" asp-items="(SelectList)ViewBag.ProductTypes"></select>
+          </div>
+          
+          <div class="form-group">
+            <label asp-for="OrderComment">Комментарий</label>
+            <textarea asp-for="OrderComment" class="form-control"></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
+        <button type="button" class="btn btn-primary" id="submitOrderBtn">Сделать заказ</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+@section Scripts {
+  <script>
+    $(document).ready(function() {
+      // Отобразим модальное окно при загрузке (или по событию)
+      $("#createOrderModal").modal("show");
+
+      // Обработчик для кнопки отправки формы
+      $("#submitOrderBtn").click(function() {
+          var form = $("#createOrderForm");
+          $.ajax({
+              type: "POST",
+              url: form.attr("action"),
+              data: form.serialize(),
+              success: function(response) {
+                  if(response.success){
+                      $("#createOrderModal").modal("hide");
+                      window.location.reload();
+                  } else {
+                      alert("Ошибка при создании заказа.");
+                  }
+              },
+              error: function() {
+                  alert("Ошибка при отправке данных.");
+              }
+          });
+      });
+    });
+  </script>
+}
