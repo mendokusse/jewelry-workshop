@@ -1,0 +1,58 @@
+@model IEnumerable<workshop_web_app.Models.Order>
+
+@{
+    ViewData["Title"] = "Мои заказы";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+@if(!Model.Any())
+{
+    <p>У вас нет заказов.</p>
+}
+else
+{
+    <div class="accordion" id="ordersAccordion">
+        @foreach (var order in Model)
+        {
+            var collapseId = $"collapseDetails_{order.OrderId}";
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="heading_@order.OrderId">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#@collapseId" aria-expanded="false" aria-controls="@collapseId">
+                        Заказ №@order.OrderId&nbsp;&mdash;&nbsp;@order.ProductType?.ProductTypeName&nbsp;&mdash;&nbsp;@order.OrderComment &nbsp;&mdash;&nbsp;Стоимость: @order.OrderPrice.ToString() &nbsp;&mdash;&nbsp;Статус: @order.Status?.StatusName
+                    </button>
+                </h2>
+                <div id="@collapseId" class="accordion-collapse collapse" aria-labelledby="heading_@order.OrderId" data-bs-parent="#ordersAccordion">
+                    <div class="accordion-body">
+                        @if(order.OrderDetails != null && order.OrderDetails.Count > 0)
+                        {
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>ID детали</th>
+                                        <th>Материал</th>
+                                        <th>Вес (кг)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var detail in order.OrderDetails)
+                                    {
+                                        <tr>
+                                            <td>@detail.DetailsListId</td>
+                                            <td>@detail.Material?.MaterialName</td>
+                                            <td>@detail.OrderMaterialWeight</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                        else
+                        {
+                            <p>Детали заказа отсутствуют.</p>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

@@ -6,16 +6,19 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using workshop_web_app.Models;
 using workshop_web_app.Repositories;
+using Microsoft.AspNetCore.Authorization;
 
 namespace workshop_web_app.Controllers
 {
     public class AccountController : Controller
     {
         private readonly UserRepository _userRepo;
+        private readonly OrderRepository _orderRepo;
 
-        public AccountController(UserRepository userRepo)
+        public AccountController(UserRepository userRepo, OrderRepository orderRepo)
         {
             _userRepo = userRepo;
+            _orderRepo = orderRepo;
         }
 
         public IActionResult Index()
@@ -114,5 +117,31 @@ namespace workshop_web_app.Controllers
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction("Index", "Home");
         }
+
+        [Authorize]
+        public async Task<IActionResult> MyOrders()
+        {
+            // Получаем идентификатор текущего пользователя из клеймов
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier) ?? User.FindFirst("UserId");
+            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            
+            // Получаем все заказы (без деталей)
+            var orders = await _orderRepo.GetAllOrdersAsync();
+            // Фильтруем только заказы текущего пользователя (заказчика)
+            var myOrders = orders.Where(o => o.CustomerUserId == userId).ToList();
+            
+            // Для каждого заказа получаем его полное представление (с деталями) вызовом GetOrderByIdAsync,
+            // как это делается в админской панели
+            for (int i = 0; i < myOrders.Count; i++)
+            {
+                myOrders[i] = await _orderRepo.GetOrderByIdAsync(myOrders[i].OrderId);
+            }
+            
+            return View(myOrders);
+        }
+
     }
 }
