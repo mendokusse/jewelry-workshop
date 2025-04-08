@@ -1,29 +1,44 @@
-@using System.Security.Claims
+@model workshop_web_app.Models.User
+
 @{
     ViewData["Title"] = "Личный кабинет";
-    var userName = User.Identity.IsAuthenticated ? User.Identity.Name : "Гость";
-    var userId = User.FindFirst("UserId")?.Value;
-    var role = User.FindFirst(ClaimTypes.Role)?.Value;
 }
 
 <h2>@ViewData["Title"]</h2>
 
 @if (User.Identity.IsAuthenticated)
 {
-    <p>Здравствуйте, <strong>@userName</strong>!</p>
-    <ul>
-        <li>ID пользователя: @userId</li>
-        <li>Роль: @role</li>
-    </ul>
-    <p>
-        <a href="@Url.Action("Logout", "Account")" class="btn btn-danger">Выйти</a>
-    </p>
+    @* Если модель не передана, показываем сообщение *@
+    @if (Model == null)
+    {
+        <p>Данные пользователя не найдены. Пожалуйста, повторите вход.</p>
+        <p><a href="@Url.Action("Logout", "Account")" class="btn btn-danger">Выйти</a></p>
+    }
+    else
+    {
+        <p>Здравствуйте, <strong>@Model.UserName</strong>!</p>
+        <div class="card">
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-3">Электронная почта:</dt>
+                    <dd class="col-sm-9">@Model.UserEmail</dd>
+
+                    <dt class="col-sm-3">Номер телефона:</dt>
+                    <dd class="col-sm-9">@Model.UserFormattedPhone</dd>
+                </dl>
+                <a href="@Url.Action("Edit", "Account")" class="btn btn-primary">Редактировать аккаунт</a>
+            </div>
+        </div>
+        <p>
+            <a href="@Url.Action("Logout", "Account")" class="btn btn-danger">Выйти</a>
+        </p>
+    }
 }
 else
 {
     <p>Вы не авторизованы. Пожалуйста, <a href="@Url.Action("Login", "Account")">войдите</a>.</p>
 }
-@using System.Security.Claims
+
 @{
     bool showAdminPanel = User.Identity.IsAuthenticated &&
                           (User.IsInRole("Admin") || User.IsInRole("Manager") ||

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using workshop_web_app.Models;
 using workshop_web_app.Repositories;
+using System.Security.Claims;
 
 namespace workshop_web_app.Controllers
 {
@@ -14,10 +15,27 @@ namespace workshop_web_app.Controllers
             _userRepo = userRepo;
         }
 
+        [Route("Account")]
+        [Route("Account/Index")]
         public async Task<IActionResult> Index()
         {
-            var users = await _userRepo.GetAllUsersAsync();
-            return View(users);
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier) ?? User.FindFirst("UserId");
+            if (userIdClaim == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            if (!int.TryParse(userIdClaim.Value, out int userId))
+            {
+                return RedirectToAction("Login");
+            }
+            
+            var user = await _userRepo.GetUserByIdAsync(userId);
+            if (user == null)
+            {
+                return RedirectToAction("Login");
+            }
+            return View("~/Views/Account/Index.cshtml", user);
         }
 
         public async Task<IActionResult> Details(int id)
