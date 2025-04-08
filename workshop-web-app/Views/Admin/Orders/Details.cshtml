@@ -35,11 +35,11 @@
     <div class="card-body">
         <dl class="row">
             <dt class="col-sm-3">Менеджер</dt>
-            <dd class="col-sm-9">@Model.ManagerUser?.UserName ?? "—"</dd>
+            <dd class="col-sm-9">@Model.ManagerUser?.UserName</dd>
             <dt class="col-sm-3">Ювелир</dt>
-            <dd class="col-sm-9">@Model.JewelerUser?.UserName ?? "—"</dd>
+            <dd class="col-sm-9">@Model.JewelerUser?.UserName</dd>
             <dt class="col-sm-3">Заказчик (Email)</dt>
-            <dd class="col-sm-9">@Model.CustomerUser?.UserEmail ?? "—"</dd>
+            <dd class="col-sm-9">@Model.CustomerUser?.UserEmail</dd>
         </dl>
     </div>
 </div>
@@ -52,10 +52,8 @@
             <table class="table table-bordered">
                 <thead>
                     <tr>
-                        <th>ID детали</th>
                         <th>Материал</th>
                         <th>Цена материала</th>
-                        <th>Количество материала</th>
                         <th>Вес</th>
                     </tr>
                 </thead>
@@ -63,10 +61,8 @@
                     @foreach(var detail in Model.OrderDetails)
                     {
                         <tr>
-                            <td>@detail.DetailsListId</td>
                             <td>@detail.Material?.MaterialName</td>
                             <td>@detail.Material?.MaterialPrice.ToString("C")</td>
-                            <td>@detail.Material?.MaterialQuantity</td>
                             <td>@detail.OrderMaterialWeight</td>
                         </tr>
                     }

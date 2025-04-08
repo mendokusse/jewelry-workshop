@@ -85,7 +85,6 @@
     <table class="table table-bordered" id="orderDetailsTable">
         <thead>
             <tr>
-                <th>ID детали</th>
                 <th>Материал</th>
                 <th>Вес, использованный в заказе</th>
                 <th>Действия</th>
@@ -96,18 +95,7 @@
             {
                 <tr>
                     <td>
-                        @Html.HiddenFor(m => m.OrderDetails[i].DetailsListId)
-                        @Html.DisplayFor(m => m.OrderDetails[i].DetailsListId)
-                    </td>
-                    <td>
-                        @if(isManager)
-                        {
-                            @Html.EditorFor(m => m.OrderDetails[i].Material.MaterialName)
-                        }
-                        else
-                        {
-                            @Html.DisplayFor(m => m.OrderDetails[i].Material.MaterialName)
-                        }
+                        <select asp-for="OrderDetails[i].Material.MaterialId" class="form-control" asp-items="(SelectList)ViewBag.Materials"></select>
                     </td>
                     <td>
                         @if(isManager || isJeweler)
@@ -138,16 +126,26 @@
     <button type="submit" class="btn btn-primary">Сохранить изменения</button>
 </form>
 
+@{
+    var materialOptions = "";
+    if(ViewBag.Materials != null)
+    {
+        foreach(var item in (SelectList)ViewBag.Materials)
+        {
+            materialOptions += $"<option value='{item.Value}'>{item.Text}</option>";
+        }
+    }
+}
+
 @section Scripts {
     <script>
         function addDetail() {
             var index = document.querySelectorAll('#orderDetailsTable tbody tr').length;
             var row = `<tr>
                 <td>
-                    <input name="OrderDetails[${index}].DetailsListId" type="hidden" value="0" />Новая
-                </td>
-                <td>
-                    <input class="form-control" name="OrderDetails[${index}].Material.MaterialName" type="text" value="" />
+                    <select class="form-control" name="OrderDetails[${index}].Material.MaterialId">
+                    ` + `@Html.Raw(materialOptions)` + `
+                    </select>
                 </td>
                 <td>
                     <input class="form-control" name="OrderDetails[${index}].OrderMaterialWeight" type="number" step="0.01" value="0" />
