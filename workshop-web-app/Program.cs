@@ -11,12 +11,12 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
-        options.LoginPath = "/Account/Login";          // путь для входа
-        options.LogoutPath = "/Account/Logout";          // путь для выхода
-        options.AccessDeniedPath = "/Account/AccessDenied"; // опционально
+        options.LoginPath = "/Account/Login";          
+        options.LogoutPath = "/Account/Logout";          
+        options.AccessDeniedPath = "/Account/AccessDenied"; 
     });
 
-// Регистрация необходимых сервисов
+
 builder.Services.AddTransient<PostgresDataAccess>();
 builder.Services.AddScoped<MaterialRepository>();
 builder.Services.AddScoped<OrderRepository>();
@@ -42,6 +42,8 @@ app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+builder.WebHost.UseUrls("http://0.0.0.0:8080");
 
 app.MapControllerRoute(
     name: "default",

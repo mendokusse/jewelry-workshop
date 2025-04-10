@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    container_name: workshop-db
+    environment:
+      POSTGRES_USER: workshop
+      POSTGRES_PASSWORD: workshoppass
+      POSTGRES_DB: workshopdb
+    volumes:
+      - ./sql:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: workshop-web
+    depends_on:
+      - db
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=workshopdb;Username=workshop;Password=workshoppass
+    ports:
+      - "8080:8080"

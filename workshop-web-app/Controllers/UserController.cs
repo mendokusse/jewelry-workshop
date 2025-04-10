@@ -15,6 +15,24 @@ namespace workshop_web_app.Controllers
             _userRepo = userRepo;
         }
 
+        [Route("User/Login")]
+        public IActionResult RedirectToLogin()
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
+        [Route("User/Register")]
+        public IActionResult RedirectToRegister()
+        {
+            return RedirectToAction("Register", "Account");
+        }
+
+        [Route("User/Logout")]
+        public IActionResult RedirectToLogout()
+        {
+            return RedirectToAction("Logout", "Account");
+        }
+
         [Route("Account")]
         [Route("Account/Index")]
         public async Task<IActionResult> Index()
@@ -22,18 +40,18 @@ namespace workshop_web_app.Controllers
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier) ?? User.FindFirst("UserId");
             if (userIdClaim == null)
             {
-                return RedirectToAction("Login");
+                return RedirectToAction("Login", "Account");
             }
 
             if (!int.TryParse(userIdClaim.Value, out int userId))
             {
-                return RedirectToAction("Login");
+                return RedirectToAction("Login", "Account");
             }
             
             var user = await _userRepo.GetUserByIdAsync(userId);
             if (user == null)
             {
-                return RedirectToAction("Login");
+                return RedirectToAction("Login", "Account");
             }
             return View("~/Views/Account/Index.cshtml", user);
         }
@@ -72,7 +90,7 @@ namespace workshop_web_app.Controllers
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier) ?? User.FindFirst("UserId");
             if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
             {
-                return RedirectToAction("Login");
+                return RedirectToAction("Login", "Account");
             }
             var user = await _userRepo.GetUserByIdAsync(userId);
             if (user == null)
@@ -91,7 +109,7 @@ namespace workshop_web_app.Controllers
                             ?? User.FindFirst("UserId");
             if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int currentUserId))
             {
-                return RedirectToAction("~/Views/Account/Login.cshtml");
+                return RedirectToAction("Login", "Account");
             }
 
             if (formModel.UserId != currentUserId)
@@ -102,7 +120,7 @@ namespace workshop_web_app.Controllers
             var originalUser = await _userRepo.GetUserByIdAsync(currentUserId);
             if (originalUser == null)
             {
-                return RedirectToAction("~/Views/Account/Login.cshtml");
+                return RedirectToAction("Login", "Account");
             }
 
             if (!string.IsNullOrEmpty(formModel.UserEmail) && formModel.UserEmail != originalUser.UserEmail)
