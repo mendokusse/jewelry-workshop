@@ -1,0 +1,81 @@
+/* Общие стили hero-секции */
+.hero-section {
+    width: 100%;
+    background: url('../img/hero.png') no-repeat right center;
+    background-size: cover;
+    height: 70vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 45vh;
+    font-optical-sizing: auto;
+    font-style: normal;
+    margin-top: -64px;
+}
+
+.hero-overlay {
+    background-color: #DDD3C769;
+    backdrop-filter: blur(7px);
+    color: #fff;
+    padding: 2rem;
+    text-align: left;
+    height: 395px;
+    width: 80%;
+    border-radius: 70px;
+    padding: 50px;
+    box-shadow: #ffffff70 0 0 10px 3px;
+    margin-top: 50vh;
+}
+
+header {
+    background-color: #DDD3C750 !important;
+    margin-bottom: 0 !important;
+    margin-top: -20px;
+}
+
+.hero-title {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    font-size: 60px !important;
+    width: 700px;
+}
+
+.hero-button {
+    background-color: #AF8968;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 30px;
+    margin-top: 9.5vh;
+    padding: 0.75rem 1.5rem;
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: background-color 0.3s ease;
+}
+.hero-button:hover {
+    background-color: #ccaa8d;
+}
+
+header {
+    padding-left: 60px;
+    padding-right: 60px;
+    backdrop-filter: blur(7px);
+}
+
+nav a {
+    color: #fff;
+    font-optical-sizing: auto;
+    font-style: normal;
+    font-size: 24px !important;
+}
+
+nav a:hover {
+    color: #fff;
+}
+
+header {
+    box-shadow: #ffffff70 0 0 5px 3px;
+}
+
+main {
+    margin: 0;
+}

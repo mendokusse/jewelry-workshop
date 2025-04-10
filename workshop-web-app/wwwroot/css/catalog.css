@@ -1,0 +1,126 @@
+button {
+    font-size: 18px;
+}
+
+main {
+    margin-top: 100px;
+}
+
+.toggle-switch {
+    display: flex;
+    background: #DDD3C769;
+    border-radius: 30px;
+    padding: 5px;
+    max-width: 600px;
+    margin: 0 auto 1rem auto;
+    gap: 5px;
+    height: 55px;
+}
+
+.toggle-switch .toggle-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #AF8968;
+    font-size: 16px;
+    padding: 10px 0;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 0;
+}
+
+.toggle-switch .toggle-btn:hover {
+    background-color: #DDD3C7;
+}
+
+.toggle-switch .toggle-btn.active {
+    background-color: #AF8968;
+    color: #fff;
+    margin-top: 0;
+}
+
+.row {
+    height: 90vh;
+}
+
+.card {
+    border-radius: 0;
+    border: 0;
+    height: 300px;
+    width: 300px;
+ 
+}
+
+.card img {
+    border-radius: 0;
+    height: 300px;
+    
+}
+
+.card .card-body {
+   padding: 10px;
+   margin-top: -55px;
+}
+
+.card-body .card-title {
+    font-size: 26px;
+    color: #fff;
+}
+
+.modal-content .modal-header button {
+    background-color: #fff !important;
+    color: #AF8968;
+    padding: 0;
+    margin: 0;
+    font-size: 30px;
+}
+
+.modal-content>*, .modal-content {
+    border: white 2px !important;
+    box-shadow: none;
+    border-radius: 30px;
+    padding: 10px 15px;
+}
+
+.modal-header h5 {
+    color: #AF8968;
+    font-size: 30px;
+}
+
+.modal-body #createOrderForm select, 
+.modal-body #createOrderForm textarea {
+    background-color: #DDD3C750;
+    border: 0;
+    color: #AF8968;
+    margin-top: 3px;
+    margin-bottom: 5px;
+    border-radius: 30px;
+} 
+
+.modal-body {
+    color: #AF8968;
+}
+
+.modal-body #createOrderForm select:focus, 
+.modal-body #createOrderForm textarea:focus {
+    border: #AF8968 2px;
+    background-color: #DDD3C760;
+} 
+.modal-footer button {
+    border: 0;
+    border-radius: 30px;
+}
+.modal-footer .btn-primary {
+    background-color: #AF8968;
+}
+.modal-footer .btn-primary:hover {
+    background-color: #ccaa8d;
+}
+
+.modal-footer .btn-secondary {
+    background-color: #DDD3C760;
+    color: #AF8968;
+    
+}
+

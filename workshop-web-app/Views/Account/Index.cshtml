@@ -4,6 +4,10 @@
     ViewData["Title"] = "Личный кабинет";
 }
 
+@section Styles {
+    <link rel="stylesheet" href="~/css/account.css" />
+}
+
 <h2>@ViewData["Title"]</h2>
 
 @if (User.Identity.IsAuthenticated)
@@ -31,6 +35,7 @@
         </div>
         <p>
             <a href="@Url.Action("Logout", "Account")" class="btn btn-danger">Выйти</a>
+            <a href="Account/MyOrders" class="btn">Мои заказы</a>
         </p>
     }
 }

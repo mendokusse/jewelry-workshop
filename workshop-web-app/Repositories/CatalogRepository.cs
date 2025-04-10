@@ -14,7 +14,7 @@ namespace workshop_web_app.Repositories
         {
         }
 
-        public async Task<List<Catalog>> GetCatalogItemsAsync(decimal? minPrice, decimal? maxPrice, int? productTypeId)
+        public async Task<List<Catalog>> GetCatalogItemsAsync(int? productTypeId)
         {
             var items = new List<Catalog>();
 
@@ -32,16 +32,12 @@ namespace workshop_web_app.Repositories
                         pt.product_type_name
                     FROM catalog c
                     LEFT JOIN product_types pt ON c.product_type_id = pt.product_type_id
-                    WHERE (@minPrice IS NULL OR c.product_price >= @minPrice)
-                      AND (@maxPrice IS NULL OR c.product_price <= @maxPrice)
-                      AND (@productTypeId IS NULL OR c.product_type_id = @productTypeId)
+                    WHERE (@productTypeId IS NULL OR c.product_type_id = @productTypeId)
                     ORDER BY c.catalog_photo_id;
                 ";
 
                 using (var command = new NpgsqlCommand(sql, connection))
                 {
-                    command.Parameters.Add("minPrice", NpgsqlTypes.NpgsqlDbType.Numeric).Value = (object)minPrice ?? DBNull.Value;
-                    command.Parameters.Add("maxPrice", NpgsqlTypes.NpgsqlDbType.Numeric).Value = (object)maxPrice ?? DBNull.Value;
                     command.Parameters.Add("productTypeId", NpgsqlTypes.NpgsqlDbType.Integer).Value = (object)productTypeId ?? DBNull.Value;
 
                     using (var reader = await command.ExecuteReaderAsync())

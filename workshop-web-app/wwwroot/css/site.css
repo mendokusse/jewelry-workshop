@@ -1,11 +1,13 @@
-html {
-  font-size: 14px;
+html * {
+  font-family: "Source Serif 4", serif !important;
+  font-optical-sizing: auto;
+  font-style: normal;
 }
 
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+.container {
+  width: 100% !important; 
+  max-width: none !important;
+  padding: 0;
 }
 
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
@@ -17,6 +19,136 @@ html {
   min-height: 100%;
 }
 
+p {
+  font-optical-sizing: auto;
+  font-style: normal;
+}
+
 body {
   margin-bottom: 60px;
+  weight: 100%
+}
+
+footer {
+  border: 0 !important;
+  background-color: #DDD3C7;
+  bottom: -230px;
+  position: absolute;
+  width: 100%;
+  height: 30vh;
+}
+
+.home-contacts {
+  width: 220px !important;
+}
+
+footer * {
+  color: #AF8968;
+  font-optical-sizing: auto;
+  font-style: normal;
+}
+
+.home-content {
+  display: flex;
+  justify-content: space-between;
+  margin: 40px 60px;
+}
+
+.home-contacts p {
+  margin: 2px 0;
+}
+
+.home-logo {
+  width: 500px;
+}
+
+footer h1 {
+  font-size: 36px;
+}
+
+header {
+  margin-bottom: -64px;
+  z-index: 100 !important;
+  position: sticky;
+  top: 0px;
+  padding-left: 60px;
+  padding-right: 60px;
+  background-color: #FFFFFF;
+  margin-top: 0px;
+}
+
+nav a {
+  color: #AF8968;
+  font-optical-sizing: auto;
+  font-style: normal;
+  font-size: 24px !important;
+}
+
+nav a:hover {
+  color: #AF8968;
+}
+
+main {
+  margin: 0 60px;
+}
+
+button {
+  background-color: #AF8968;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 30px;
+  margin-top: 9.5vh;
+  padding: 0.75rem 1.5rem;
+  cursor: pointer;
+  font-size: 1.2rem;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #ccaa8d;
+}
+
+.navbar-lk {
+  text-decoration: none;
+  text-transform: lowercase;
+  font-size: 20px !important;
+}
+
+.btn {
+  border: 0 ;
+  border-radius: 30px;
+  margin: 7px;
+}
+
+.btn-primary {
+  background-color: #AF8968;
+  color: #FFFFFF;
+  box-shadow: rgba(0, 0, 0, 0.56) 0 0 3px .5px;
+}
+
+.btn-primary:hover {
+  background-color: #caaf97;
+}
+
+.btn-danger {
+  background-color: brown;
+  box-shadow: rgba(0, 0, 0, 0.56) 0 0 3px .5px;
+}
+
+.btn-warning, .btn-block {
+  background-color: #DDD3C7;
+  color: #AF8968;
+  box-shadow: rgba(0, 0, 0, 0.56) 0 0 3px .5px;
+}
+
+.btn-warning:hover, 
+.btn-block:hover {
+  background-color: #eae4dd;
+  color: #AF8968;
+} 
+
+.btn-secondary, .btn-info {
+  background-color: white;
+  color: black;
+  box-shadow: rgba(0, 0, 0, 0.56) 0 0 3px .5px;
 }

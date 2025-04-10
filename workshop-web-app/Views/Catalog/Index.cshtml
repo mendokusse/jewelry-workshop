@@ -4,50 +4,39 @@
     ViewData["Title"] = "Каталог изделий";
 }
 
-<h1>@ViewData["Title"]</h1>
+@section Styles {
+    <link rel="stylesheet" href="~/css/catalog.css" />
+}
 
-<button id="makeOrderBtn" class="btn btn-primary">Сделать заказ</button>
-
+@section DisableBootstrap { }
 <div id="modalContainer"></div>
 
-<!-- Форма фильтрации -->
-<form method="get" asp-controller="Catalog" asp-action="Index">
-    <div class="row">
-        <div class="col-md-3">
-            <label for="productTypeId">Тип изделия</label>
-            <select id="productTypeId" name="productTypeId" class="form-control">
-                <option value="">Все</option>
-                @if(ViewBag.ProductTypes != null)
-                {
-                    foreach (var pt in (IEnumerable<workshop_web_app.Models.ProductType>)ViewBag.ProductTypes)
-                    {
-                        <option value="@pt.ProductTypeId">@pt.ProductTypeName</option>
-                    }
-                }
-            </select>
-        </div>
-        <div class="col-md-3">
-            <label for="minPrice">Мин. цена</label>
-            <input type="number" step="0.01" id="minPrice" name="minPrice" class="form-control" placeholder="От" />
-        </div>
-        <div class="col-md-3">
-            <label for="maxPrice">Макс. цена</label>
-            <input type="number" step="0.01" id="maxPrice" name="maxPrice" class="form-control" placeholder="До" />
-        </div>
-        <div class="col-md-3 d-flex align-items-end">
-            <button type="submit" class="btn btn-primary">Применить фильтр</button>
-        </div>
-    </div>
-</form>
+<div class="toggle-switch">
+    <button type="button"
+            class="toggle-btn @(ViewBag.SelectedType == null ? "active" : "")"
+            onclick="filterByProductType('')">Все</button>
 
-<hr />
+    @if(ViewBag.ProductTypes != null)
+    {
+        foreach (var pt in (IEnumerable<workshop_web_app.Models.ProductType>)ViewBag.ProductTypes)
+        {
+            <button type="button"
+                    class="toggle-btn @(ViewBag.SelectedType == pt.ProductTypeId ? "active" : "")"
+                    onclick="filterByProductType('@pt.ProductTypeId')">
+                @pt.ProductTypeName
+            </button>
+        }
+    }
+</div>
+
+<hr/>
 
 <div class="row">
     @foreach (var item in Model)
     {
         <div class="col-md-4 col-lg-3 mb-4">
-            <div class="card h-100">
-                <img src="~/catalog-img/@item.ProductImgPath" class="card-img-top" alt="@item.ProductName" style="height: 200px; object-fit: cover;" />
+            <div class="card">
+                <img src="~/catalog-img/@item.ProductImgPath" class="card-img-top" alt="@item.ProductName" />
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title">@item.ProductName</h5>
                 </div>
@@ -55,6 +44,8 @@
         </div>
     }
 </div>
+
+<button id="makeOrderBtn">Сделать заказ</button>
 
 @section Scripts {
     <script>
@@ -96,5 +87,23 @@
                 });
             });
         });
+
+        function filterByProductType(productTypeId) {
+            const buttons = document.querySelectorAll('.toggle-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+
+            const selectedButton = [...buttons].find(btn => {
+                return btn.getAttribute('onclick')?.includes("'" + productTypeId + "'");
+            });
+
+            if (selectedButton) {
+                selectedButton.classList.add('active');
+            }
+
+            const baseUrl = '@Url.Action("Index", "Catalog")';
+            const url = productTypeId ? `${baseUrl}?productTypeId=${productTypeId}` : baseUrl;
+
+            window.location.href = url;
+        }
     </script>
 }

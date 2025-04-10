@@ -1,5 +1,7 @@
 @model workshop_web_app.Models.Order
 
+@section DisableBootstrap { }
+
 <div class="modal fade" id="createOrderModal" tabindex="-1" role="dialog" aria-labelledby="createOrderModalLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
@@ -25,7 +27,6 @@
         </form>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
         <button type="button" class="btn btn-primary" id="submitOrderBtn">Сделать заказ</button>
       </div>
     </div>

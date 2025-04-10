@@ -15,11 +15,14 @@ namespace workshop_web_app.Controllers
             _productTypeRepo = productTypeRepo;
         }
 
-        public async Task<IActionResult> Index(decimal? minPrice, decimal? maxPrice, int? productTypeId)
+        public async Task<IActionResult> Index(int? productTypeId)
         {
-            var items = await _catalogRepo.GetCatalogItemsAsync(minPrice, maxPrice, productTypeId);
+            var items = await _catalogRepo.GetCatalogItemsAsync(productTypeId);
             var productTypes = await _productTypeRepo.GetAllProductTypesAsync();
+
             ViewBag.ProductTypes = productTypes;
+            ViewBag.SelectedType = productTypeId;
+
             return View(items);
         }
     }
